@@ -9,7 +9,11 @@
 ```shell
 git clone https://github.com/r1soX/LibraryManager.git
 ```
-3. Запустите программу, выполнив команду:
+3. Перейдите в дирректорию
+```shell
+cd LibraryManager
+```
+4. Запустите программу, выполнив команду:
 ```shell
 python main.py
 ```
