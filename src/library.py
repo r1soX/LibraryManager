@@ -108,6 +108,7 @@ class Library:
         # Проверяем, что название, автор и описание не пусты
         if not title or not author or not description:
             print("Ошибка: Название, автор и описание книги не могут быть пустыми.")
+            input("Нажмите Enter для продолжения.")
             return
         
         # Получаем список всех жанров книг
@@ -125,6 +126,7 @@ class Library:
             genre = input("Введите новый жанр: ")
             if not genre:
                 print("Ошибка: Жанр книги не может быть пустым.")
+                input("Нажмите Enter для продолжения.")
                 return
         
         if genre not in genres:
