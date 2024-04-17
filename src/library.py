@@ -58,9 +58,10 @@ class Library:
         Создание таблицы жанров книг, если она не существует.
         Добавление жанров, если их нет в базе данных.
         """
-
+        # Проверяем, существует ли таблица жанров
         self.cursor.execute(self.create_genres_table_query)
         count = self.cursor.fetchone()[0]
+        # Если таблица не существует, добавляем стандартные жанры
         if count == 0:
             self.cursor.executemany(self.add_default_genres_query, [
                 ('Фантастика',), ('Детектив',),('Роман',),('Приключения',),('Драма',)])
@@ -72,6 +73,7 @@ class Library:
         :param book_id: ID книги.
         :return: Словарь с информацией о книге.
         """
+        # Получаем подробную информацию о книге по её ID
         self.cursor.execute(self.get_book_details_query, (book_id,))
         book = self.cursor.fetchone()
         return book
@@ -101,6 +103,7 @@ class Library:
         """
         Добавление новой книги в библиотеку.
         """
+        # Получаем название, автора и описание книги из консоли
         title = input("Введите название книги: ")
         author = input("Укажите автора книги: ")
         description = input("Введите описание книги: ")
@@ -128,12 +131,12 @@ class Library:
                 print("Ошибка: Жанр книги не может быть пустым.")
                 self.wait_for_enter()
                 return
-        
+        # Проверяем, что жанр книги есть в базе данных
         if genre not in genres:
             self.cursor.execute(self.add_default_genres_query, (genre,))
             self.conn.commit()
-        
-        self.cursor.execute(self.add_book_query, (title, author, description, genre))
+        # Добавляем книгу в библиотеку
+        self.cursor.execute(self.add_book_query, (title, author, description, genre)) 
         self.conn.commit()
         print(f"Книга {title} успешно добавлена в библиотеку.")
         self.wait_for_enter()
@@ -142,21 +145,25 @@ class Library:
         """
         Отображение списка всех книг в библиотеке.
         """
-
+        # Проверяем наличие данных о книгах в библиотеке
         if (self.has_book_data() == False): # Проверяем наличие данных о книгах в библиотеке
             print("Библиотека пуста, добавьте книги.")
             self.wait_for_enter()
             return
-
+        # Выводим список всех книг в библиотеке
         self.cursor.execute(self.books_query)
         books = self.cursor.fetchall()
+        # Выводим информацию о книгах
         for book in books:
             print(f"ID: {book[0]}, Название: {book[1]}, Автор: {book[2]}")
-        book_id = input("Введите ID книги для просмотра подробной информации (или нажмите Enter для продолжения): ")
+            
+        # Получаем ID книги для просмотра подробной информации или завершаем работу
+        book_id = input("Введите ID книги для просмотра подробной информации (или нажмите Enter для продолжения): ") 
         if not book_id:
             return
-        
+        # Проверяем, что введен ID книги
         if book_id:
+            # Получаем подробную информацию о книге
             book_details = self.get_book_details(int(book_id))
             if book_details:
                 print("Подробная информация о книге:")
@@ -181,18 +188,22 @@ class Library:
         """
         Отображение списка книг определенного жанра.
         """
-        
+        # Проверяем наличие данных о книгах в библиотеке
         if (self.has_book_data() == False):
             print("Библиотека пуста, добавьте книги.")
             self.wait_for_enter()
             return
+        # Вводим жанр для просмотра книг
         genre = input("Введите жанр для просмотра книг: ")
+        # Проверяем, что жанр не пустой
         if not genre:
             print("Ошибка: Книг без жанров не существует.")
             self.wait_for_enter()
             return
+        # Выполняем поиск книг по жанру
         self.cursor.execute(self.display_books_by_genre_query, (genre,))
         books = self.cursor.fetchall()
+        # Выводим результаты поиска
         if books:
             print(f"Книги в жанре '{genre}':")
             for book in books:
@@ -205,17 +216,22 @@ class Library:
         """
         Поиск книг по ключевому слову.
         """
+        # Проверяем наличие данных о книгах в библиотеке
         if (self.has_book_data() == False):
             print("Библиотека пуста, добавьте книги.")
             self.wait_for_enter()
             return
+        # Вводим ключевое слово для поиска
         keyword = input("Введите ключевое слово для поиска: ")
+        # Проверяем, что ключевое слово не пустое
         if not keyword:
             print("Ошибка: Ключевое слово не может быть пустым.")
             self.wait_for_enter()
             return
+        # Выполняем поиск книг по ключевому слову
         self.cursor.execute(self.search_books_query, ('%' + keyword + '%', '%' + keyword + '%'))
         books = self.cursor.fetchall()
+        # Выводим результаты поиска
         if books:
             print(f"Результаты поиска для '{keyword}':")
             for book in books:
@@ -240,11 +256,14 @@ class Library:
         for book in books:
             print(f"ID: {book[0]}, Название: {book[1]}, Автор: {book[2]}")
         title = input("Введите название книги для удаления: ")
+        # Проверяем, что название книги не пустое
         if not title:
             print("Ошибка: Вы не указали название книги.")
             self.wait_for_enter()
             return    
+        # Получаем ID книги по названию
         book_id = self.get_book_id_by_title(title)
+        # Если книга найдена, удаляем ее
         if book_id:
             self.cursor.execute(self.delete_book_query, (book_id,))
             self.conn.commit()
@@ -253,5 +272,6 @@ class Library:
             print(f"Книга с названием '{title}' не найдена.")
         self.wait_for_enter()
         
+    # Функция для ожидания нажатия Enter
     def wait_for_enter(self):
         input("Для продолжения нажмите Enter...")   
